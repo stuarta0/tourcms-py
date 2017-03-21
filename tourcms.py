@@ -19,7 +19,7 @@ import logging
 
 
 __author__ = 'Jonathan Harrington'
-__version__ = '0.3'
+__version__ = '0.4'
 __license__ = 'BSD'
 
 
