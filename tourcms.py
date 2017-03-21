@@ -53,7 +53,7 @@ class Connection(object):
             self.logger.error("XMLtodict not available, install it by running\n\t$ pip install xmltodict\n")
             return response
 
-    def _request(self, path, channel = 0, params = {}, verb = "GET", post_data=None):
+    def _request(self, path, channel = 0, params = {}, verb = "GET"):
         if params:
             query_string = "?" + urllib.urlencode(params)
         else:
@@ -87,7 +87,8 @@ class Connection(object):
         for key, value in headers.items():
             req.add_header(key, value)
 
-        if verb == "POST" and post_data is not None:
+        if verb == "POST":
+            data = urllib.urlencode(params).encode('ascii')
             response = urllib2.urlopen(req, post_data).read()
         else:
             response = urllib2.urlopen(req).read()
@@ -147,9 +148,9 @@ class Connection(object):
     def show_supplier(self, supplier, channel):
         return self._request("/c/supplier/show.xml", channel, {"supplier_id": supplier})
 
-    # booking creation > Getting a new booking key
-    def get_booking_redirect_url(self, data, channel = 0):
-        return self._request("/c/booking/new/get_redirect_url.xml", channel, {}, "POST", data)
+    # booking creation > Getting a new booking key (only tour operator)
+    def get_booking_redirect_url(self, params = {}, channel = 0):
+        return self._request("/c/booking/new/get_redirect_url.xml", channel, params, "POST")
 
     # List Tour Locations
     def list_tour_locations(self, channel = 0):
@@ -166,7 +167,7 @@ class Connection(object):
 
     # Create Customer/Enquiry
     def create_enquiry(self, channel = 0, params = {}):
-        return self._request("/c/enquiry/new.xml", channel, params, "POST", urllib.urlencode(params))
+        return self._request("/c/enquiry/new.xml", channel, params, "POST")
 
     # Search Enquiries
     def search_enquiries(self, channel = 0, params = {}):
