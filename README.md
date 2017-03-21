@@ -81,7 +81,6 @@ Many TourCMS methods accept parameters. Most methods take a dictionary of parame
 *   show\_tour\_freesale
 *   show\_supplier
 *   get\_booking\_redirect\_url
-*   get\_booking\_redirect\_url
 *   list\_tour\_locations
 *   list\_product\_filters
 *   show\_tour\_dates\_deals

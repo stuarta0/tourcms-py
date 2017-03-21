@@ -155,7 +155,7 @@ class Connection(object):
     def list_tour_locations(self, channel = 0):
         return self._request("/p/tours/locations.xml", channel)
 
-    # List Product Filters
+    # List Product Filters (only tour operator)
     def list_product_filters(self, channel = 0):
         return self._request("/c/tours/filters.xml", channel)
 
@@ -166,7 +166,7 @@ class Connection(object):
 
     # Create Customer/Enquiry
     def create_enquiry(self, channel = 0, params = {}):
-        return self._request("/c/enquiry/new.xml", channel, params)
+        return self._request("/c/enquiry/new.xml", channel, params, "POST", urllib.urlencode(params))
 
     # Search Enquiries
     def search_enquiries(self, channel = 0, params = {}):
