@@ -68,25 +68,23 @@ Many TourCMS methods accept parameters. Most methods take a dictionary of parame
 
 ## List of functions in tourcms.Connection
 
-*   api\_rate\_limit\_status
-*   list\_channels
-*   show\_channel
-*   search\_tours
-*   search\_hotels\_range
-*   search\_hotels\_specific
-*   list\_tours
-*   list\_tour\_images
-*   show\_tour
-*   show\_tour\_departures
-*   show\_tour\_freesale
-*   show\_supplier
-*   get\_booking\_redirect\_url
-*   list\_tour\_locations
-*   list\_product\_filters
-*   show\_tour\_dates\_deals
-*   create\_enquiry
-*   search\_enquiries
-*   show\_enquiry
+*   api\_rate\_limit\_status(channel)
+*   list\_channels()
+*   show\_channel(channel)
+*   search\_tours(params, channel)
+*   search\_hotels\_specific(params, tour_id, channel)
+*   list\_tours(channel)
+*   list\_tour\_images(channel)
+*   show\_tour(tour, channel)
+*   show\_tour\_departures(tour_id, channel)
+*   show\_supplier(supplier_id, channel)
+*   get\_booking\_redirect\_url(params, channel)
+*   list\_tour\_locations(channel)
+*   list\_product\_filters(channel)
+*   show\_tour\_dates\_deals(params, tour_id ,channel)
+*   create\_enquiry(params, channel)
+*   search\_enquiries(params, channel)
+*   show\_enquiry(enquiry_id, channel)
 
 ## Dependencies
 

@@ -161,18 +161,18 @@ class Connection(object):
         return self._request("/c/tours/filters.xml", channel)
 
     # Show Tour Dates & Deals
-    def show_tour_dates_deals(self, tour, channel = 0, params = {}):
+    def show_tour_dates_deals(self, params = {}, tour, channel = 0):
         params.update({"id": tour})
         return self._request("/c/tour/datesprices/datesndeals/search.xml", channel, params)
 
     # Create Customer/Enquiry
-    def create_enquiry(self, channel = 0, params = {}):
+    def create_enquiry(self, params = {}, channel = 0):
         return self._request("/c/enquiry/new.xml", channel, params, "POST")
 
     # Search Enquiries
-    def search_enquiries(self, channel = 0, params = {}):
+    def search_enquiries(self, params = {}, channel = 0):
         return self._request("/c/enquiries/search.xml", channel, params)
 
     # Show Enquiry
-    def show_enquiry(self, channel, enquiry):
+    def show_enquiry(self, enquiry, channel):
         return self._request("/c/enquiry/show.xml", channel, {'enquiry_id': enquiry})
