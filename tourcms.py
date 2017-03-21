@@ -94,28 +94,26 @@ class Connection(object):
 
     return response if self.result_type == "raw" else self._response_to_native(response)
 
+  # API Rate Limit Status
   def api_rate_limit_status(self, channel = 0):
     return self._request("/api/rate_limit_status.xml", channel)
 
+  # List Channels
   def list_channels(self):
     return self._request("/p/channels/list.xml")
 
+  # Show Channel
   def show_channel(self, channel):
     return self._request("/c/channel/show.xml", channel)
 
+  # Search Tours
   def search_tours(self, params = {}, channel = 0):
     if channel == 0:
       return self._request("/p/tours/search.xml", 0, params)
     else:
       return self._request("/c/tours/search.xml", channel, params)
 
-  def search_hotels_range(self, params = {}, tour = "", channel = 0):
-    params.update({"single_tour_id": tour})
-    if channel == 0:
-      return self._request("/p/hotels/search_range.xml", 0, params)
-    else:
-      return self._request("/c/hotels/search_range.xml", channel, params)
-
+  # Search Hotels by specific availability
   def search_hotels_specific(self, params = {}, tour = "", channel = 0):
     params.update({"single_tour_id": tour})
     if channel == 0:
@@ -123,29 +121,39 @@ class Connection(object):
     else:
       return self._request("/c/hotels/search-avail.xml", channel, params)
 
+  # List Tours
   def list_tours(self, channel = 0):
     if channel == 0:
       return self._request("/p/tours/list.xml")
     else:
       return self._request("/c/tours/list.xml", channel)
 
+  # List Tour Images
   def list_tour_images(self, channel = 0):
     if channel == 0:
       return self._request("/p/tours/images/list.xml")
     else:
       return self._request("/c/tours/images/list.xml", channel)
 
+  # Show Tour
   def show_tour(self, tour, channel):
     return self._request("/c/tour/show.xml", channel, {"id": tour})
 
+  # Show Tour Departures
   def show_tour_departures(self, tour, channel):
     return self._request("/c/tour/datesprices/dep/show.xml", channel, {"id": tour})
 
-  def show_tour_freesale(self, tour, channel):
-    return self._request("/c/tour/datesprices/freesale/show.xml", channel, {"id": tour})
-
+  # Show Supplier
   def show_supplier(self, supplier, channel):
     return self._request("/c/supplier/show.xml", channel, {"supplier_id": supplier})
 
+  # booking creation > Getting a new booking key
   def get_booking_redirect_url(self, data, channel = 0):
     return self._request("/c/booking/new/get_redirect_url.xml", channel, {}, "POST", data)
+
+# List Tour Locations
+# List Product Filters
+# Show Tour Dates & Deals
+# Create Customer/Enquiry
+# Search Enquiries
+# Show Enquiry
