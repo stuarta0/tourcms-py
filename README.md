@@ -86,9 +86,50 @@ Many TourCMS methods accept parameters. Most methods take a dictionary of parame
 *   search\_enquiries(params, channel)
 *   show\_enquiry(enquiry_id, channel)
 
+## from the documentation
+### api\_rate\_limit\_status(channel)
+args {
+  channel: channel_id
+}
+response {
+  request:	Confirmation of the request that you sent,
+  error:	Any error message returned, if there is no error this will just contain the text OK,
+  remaining_hits:	Number of remaining hits before you are throttled,
+  hourly_limit:	Current GET limit per hour,
+}
+
+### list\_channels()
+response {
+  request:	Confirmation of the request that you sent,
+  error:	Any error message returned, if there is no error this will just contain the text OK,
+  channel:  channel_id:	Channel ID,
+            account_id:	Account ID,
+            channel_name:	Channel name,
+            logo_url:	Channel logo URL,
+            home_url:	URL website homepage,
+            home_url_tracked:	URL website homepage (with agent tracking),
+            lang:	Language,
+            sale_currency:	Sale currency,
+            short_desc:	Short description,
+            long_desc:	Long description,
+            payment_gateway:  gateway_id:	TourCMS unique identifier for this gateway,
+                              name:	Staff entered name for the gateway, freetext
+                              take_visa: A field for each possible supported credit/debit card type (MasterCard, Diners Club, Discover, American Express, UnionPay). Will be "1" if card type is accepted, "0" if it isn't
+                              take_mastercard:
+                              take_diners:
+                              take_discover:
+                              take_amex:
+                              take_unionpay:
+                              gateway_type:	Indicates the type of gateway used, if "SPRE" then the operator is using Spreedly which allows agents websites/apps to offer payments direct to the operator. Other values include "PAYP" for PayPal, "AUN" for Authorize.net
+                              #### If the operator is using Spreedly (gateway_type "SPRE")
+                              spreedly_environment_key:	Required for taking credit card payments via Spreedly payment solution powered companies. This is open for travel agent use as well as supplier. More details
+                              #### If accessing as a tour operator (not an agent)
+                              field_(1-10): Configuration settings for the payment gateway, useful if building a custom booking engine, allows gateway details to be stored once - in TourCMS.10 fields, not all are used for all gateways (so some may be blank). The data stored in each numbered field varies by gateway, see the gateway settings page in TourCMS to match up the correct fields.
+}
+
 ## Dependencies
 
-None. xmltodict optional. Tested with Python 2.6, 2.7 & 3.3.
+None. xmltodict optional. Tested with Python 2.6, 2.7, 3.3 & 3.6.
 
 ## Copyright
 
