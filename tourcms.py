@@ -117,32 +117,25 @@ class Connection(object):
     # Search Hotels by specific availability
     def search_hotels_specific(self, params = {}, tour = "", channel = 0):
         params.update({"single_tour_id": tour})
-        if channel == 0:
-            return self._request("/p/hotels/search-avail.xml", 0, params)
-        else:
-            return self._request("/c/hotels/search-avail.xml", channel, params)
+        return self._request("/c/hotels/search-avail.xml", channel, params)
 
     # List Tours
-    def list_tours(self, channel = 0):
-        if channel == 0:
-            return self._request("/p/tours/list.xml")
-        else:
-            return self._request("/c/tours/list.xml", channel)
+    def list_tours(self, params={}, channel = 0):
+        return self._request("/c/tours/list.xml", channel, params)
 
     # List Tour Images
-    def list_tour_images(self, channel = 0):
-        if channel == 0:
-            return self._request("/p/tours/images/list.xml")
-        else:
-            return self._request("/c/tours/images/list.xml", channel)
+    def list_tour_images(self, params={}, channel = 0):
+        return self._request("/c/tours/images/list.xml", channel, params)
 
     # Show Tour
-    def show_tour(self, tour, channel):
-        return self._request("/c/tour/show.xml", channel, {"id": tour})
+    def show_tour(self, params, tour, channel):
+        params.update({"id": tour})
+        return self._request("/c/tour/show.xml", channel, params)
 
     # Show Tour Departures
-    def show_tour_departures(self, tour, channel):
-        return self._request("/c/tour/datesprices/dep/show.xml", channel, {"id": tour})
+    def show_tour_departures(self, params, tour, channel):
+        params.update({"id": tour})
+        return self._request("/c/tour/datesprices/dep/show.xml", channel, params)
 
     # Show Supplier
     def show_supplier(self, supplier, channel):
@@ -153,8 +146,8 @@ class Connection(object):
         return self._request("/c/booking/new/get_redirect_url.xml", channel, params, "POST")
 
     # List Tour Locations
-    def list_tour_locations(self, channel = 0):
-        return self._request("/p/tours/locations.xml", channel)
+    def list_tour_locations(self, params={}, channel = 0):
+        return self._request("/p/tours/locations.xml", channel, params)
 
     # List Product Filters (only tour operator)
     def list_product_filters(self, channel = 0):
