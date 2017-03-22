@@ -87,11 +87,15 @@ class Connection(object):
         for key, value in headers.items():
             req.add_header(key, value)
 
-        if verb == "POST":
-            data = urllib.urlencode(params).encode('ascii')
-            response = urllib2.urlopen(req, post_data).read()
-        else:
-            response = urllib2.urlopen(req).read()
+        try:
+            if verb == "POST":
+                data = urllib.urlencode(params).encode('ascii')
+                response = urllib2.urlopen(req, post_data).read()
+            else:
+                response = urllib2.urlopen(req).read()
+        except urllib2.HTTPError as err:
+            print(err.code)
+            return {"error": err.code}
 
         return response if self.result_type == "raw" else self._response_to_native(response)
 
@@ -154,7 +158,7 @@ class Connection(object):
         return self._request("/c/tours/filters.xml", channel)
 
     # Show Tour Dates & Deals
-    def show_tour_dates_deals(self, params = {}, tour, channel = 0):
+    def show_tour_dates_deals(self, tour, channel = 0, params = {}):
         params.update({"id": tour})
         return self._request("/c/tour/datesprices/datesndeals/search.xml", channel, params)
 

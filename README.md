@@ -81,7 +81,7 @@ Many TourCMS methods accept parameters. Most methods take a dictionary of parame
 *   get\_booking\_redirect\_url(params, channel)
 *   list\_tour\_locations(params, channel)
 *   list\_product\_filters(channel)
-*   show\_tour\_dates\_deals(params, tour_id ,channel)
+*   show\_tour\_dates\_deals(tour_id ,channel, params)
 *   create\_enquiry(params, channel)
 *   search\_enquiries(params, channel)
 *   show\_enquiry(enquiry_id, channel)
@@ -1269,7 +1269,7 @@ response: {
   }
 }
 ```
-### show\_tour\_dates\_deals(params, tour_id ,channel)
+### show\_tour\_dates\_deals(tour_id ,channel, params)
 ```
 args: {
   channel: ,
