@@ -82,7 +82,7 @@ Many TourCMS methods accept parameters. Most methods take a dictionary of parame
 *   list\_tour\_locations(channel, params)
 *   list\_product\_filters(channel)
 *   show\_tour\_dates\_deals(tour_id ,channel, params)
-*   create\_enquiry(params, channel)
+*   create\_enquiry(channel, params)
 *   search\_enquiries(channel, params)
 *   show\_enquiry(enquiry_id, channel)
 
@@ -693,7 +693,7 @@ args: {
   params: {
     startdate_yyyymmdd: (YYYY-MM-DD) - Start (check in) date,
 
-    hdur: Duration (days / nights),
+    hdur: Duration ( nights, days),
 
     ad: Adults (non mandatory),
 
@@ -1362,7 +1362,7 @@ response: {
   }
 }
 ```
-### create\_enquiry(params, channel)
+### create\_enquiry(channel, params)
 ```
 args: {
   channel: ,

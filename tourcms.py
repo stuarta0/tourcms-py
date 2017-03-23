@@ -160,7 +160,7 @@ class Connection(object):
         return self._request("/c/tour/datesprices/datesndeals/search.xml", channel, params)
 
     # Create Customer/Enquiry
-    def create_enquiry(self, params = {}, channel = 0):
+    def create_enquiry(self, channel = 0, params = {}):
         return self._request("/c/enquiry/new.xml", channel, params, "POST")
 
     # Search Enquiries
