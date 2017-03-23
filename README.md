@@ -71,19 +71,19 @@ Many TourCMS methods accept parameters. Most methods take a dictionary of parame
 *   api\_rate\_limit\_status(channel)
 *   list\_channels()
 *   show\_channel(channel)
-*   search\_tours(params, channel)
-*   search\_hotels\_specific(params, tour_id, channel)
-*   list\_tours(params, channel)
-*   list\_tour\_images(params, channel)
-*   show\_tour(params, tour, channel)
-*   show\_tour\_departures(params, tour_id, channel)
+*   search\_tours(channel, params)
+*   search\_hotels\_specific(tour_id, channel, params)
+*   list\_tours(channel, params)
+*   list\_tour\_images(channel, params)
+*   show\_tour(tour, channel, params)
+*   show\_tour\_departures(tour_id, channel, params)
 *   show\_supplier(supplier_id, channel)
-*   get\_booking\_redirect\_url(params, channel)
-*   list\_tour\_locations(params, channel)
+*   get\_booking\_redirect\_url(channel, params)
+*   list\_tour\_locations(channel, params)
 *   list\_product\_filters(channel)
 *   show\_tour\_dates\_deals(tour_id ,channel, params)
 *   create\_enquiry(params, channel)
-*   search\_enquiries(params, channel)
+*   search\_enquiries(channel, params)
 *   show\_enquiry(enquiry_id, channel)
 
 ## from the documentation
@@ -293,7 +293,7 @@ response: {
   }
 }
 ```
-### search\_tours(params, channel)
+### search\_tours(channel, params)
 ```
 args: {
   channel: channel_id,
@@ -683,7 +683,7 @@ response: {
   }
 }
 ```
-### search\_hotels\_specific(params, tour_id, channel)
+### search\_hotels\_specific(tour_id, channel, params)
 ```
 args: {
   channel: , optional
@@ -738,7 +738,7 @@ response: [{
   }
 }]
 ```
-### list\_tours(params, channel)
+### list\_tours(channel, params)
 ```
 args: {
   channel: , optional
@@ -755,7 +755,7 @@ response: {
 
   error:	...,
 
-  tour: {
+  tour: [{
     channel_id: ,
 
     account_id: ,
@@ -778,10 +778,10 @@ response: {
 
     supplier_tour_code: If a Tour Operator is using the API call directly then supplier_tour_code will contain the supplier set tour code. This field is ideal if you are syncronising TourCMS with an external reservation system as this could be the external reservation system tour ID. Not returned when a Marketplace Agent is using the API.,
 
-  }
+  }]
 }
 ```
-### list\_tour\_images(params, channel)
+### list\_tour\_images(channel, params)
 ```
 args: {
   channel: , optional
@@ -798,7 +798,7 @@ response: {
 
   error:	...,
 
-  tour: {
+  tour: [{
     channel_id: ,
 
     account_id: ,
@@ -818,11 +818,11 @@ response: {
         url_original: ,
       }
     }]
-  }
+  }]
 }
 
 ```
-### show\_tour(params, tour, channel)
+### show\_tour(tour, channel, params)
 ```
 args: {
   channel: , optional
@@ -1013,7 +1013,7 @@ response: {
   }
 }
 ```
-### show\_tour\_departures(params, tour_id, channel)
+### show\_tour\_departures(tour_id, channel, params)
 ```
 args: {
   tour_id: ,
@@ -1189,7 +1189,7 @@ response: {
   }
 }
 ```
-### get\_booking\_redirect\_url(params, channel)
+### get\_booking\_redirect\_url(channel, params)
 ```
 args: {
   channel: ,
@@ -1212,7 +1212,7 @@ response: {
   }
 }
 ```
-### list\_tour\_locations(params, channel)
+### list\_tour\_locations(channel, params)
 ```
 args: {
   channel: ,
@@ -1469,7 +1469,7 @@ response: {
   }
 }
 ```
-### search\_enquiries(params, channel)
+### search\_enquiries(channel, {})
 ```
 args: {
   channel: ,
@@ -1495,7 +1495,7 @@ response: {
 
   error: ...,
 
-  enquiry: {
+  enquiry: [{
     channel_id: ,
 
     account_id: ,
@@ -1524,7 +1524,7 @@ response: {
 
     closed_date_time: ,
 
-  }
+  }]
 
   total_enquiries_count: ,
 }
@@ -1542,7 +1542,7 @@ response: {
 
   error: ...,
 
-  enquiry: {
+  enquiry: [{
     channel_id: ,
 
     account_id: ,
@@ -1571,7 +1571,7 @@ response: {
 
     closed_date_time: ,
 
-  }
+  }]
 }
 ```
 
