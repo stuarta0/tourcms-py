@@ -143,8 +143,8 @@ class Connection(object):
         return self._request("/c/supplier/show.xml", channel, {"supplier_id": supplier_id})
 
     # booking creation > Getting a new booking key (only tour operator)
-    def get_booking_redirect_url(self, channel = 0, params = {}):
-        return self._request("/c/booking/new/get_redirect_url.xml", channel, params, "POST")
+    def get_booking_redirect_url(self, channel, url):
+        return self._request("/c/booking/new/get_redirect_url.xml", channel, {'url': {'response_url': url}}, "POST")
 
     # List Tour Locations
     def list_tour_locations(self, channel = 0, params = {}):
@@ -156,7 +156,7 @@ class Connection(object):
 
     # Show Tour Dates & Deals
     def show_tour_dates_deals(self, tour, channel = 0, params = {}):
-        params.update({"tour_id": tour})
+        params.update({"id": tour})
         return self._request("/c/tour/datesprices/datesndeals/search.xml", channel, params)
 
     # Create Customer/Enquiry
@@ -170,3 +170,34 @@ class Connection(object):
     # Show Enquiry
     def show_enquiry(self, enquiry, channel):
         return self._request("/c/enquiry/show.xml", channel, {'enquiry_id': enquiry})
+
+    # Check Tour Availability
+    def tour_avail(self, tour_id, channel, date, rates):
+        params = {
+            'id': tour_id,
+            'date': date,
+        }
+        params.update(rates)
+        return self._request("/c/tour/datesprices/checkavail.xml", channel, params)
+
+    # Start New Booking
+    def start_booking(self, booking_key, customers_no, components, customers, channel = 0):
+        params = {
+            'booking': {
+                'total_customers': customers_no,
+                'booking_key': booking_key,
+                'components': components,
+                'customers': customers
+            }
+        }
+        return self._request("/c/booking/new/start.xml", channel, params, "POST")
+
+
+    # Commit new booking
+    def commit_booking(self, booking_id, channel = 0):
+        params = {
+            'booking': {
+                'booking_id': booking_id
+            }
+        }
+        return self._request("/c/booking/new/commit.xml", channel, params, "POST")
