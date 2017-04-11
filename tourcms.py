@@ -13,6 +13,7 @@ try:
     import xmltodict
 except ImportError:
     pass
+import dicttoxml
 import time
 import base64
 import logging
@@ -53,7 +54,7 @@ class Connection(object):
             self.logger.error("XMLtodict not available, install it by running\n\t$ pip install xmltodict\n")
             return response
 
-    def _request(self, path, channel = 0, params = {}, verb = "GET"):
+    def _request(self, path, channel = 0, params = {}, verb = "GET", mlvl = False):
         if params:
             query_string = "?" + urllib.urlencode(params)
         else:
@@ -89,12 +90,15 @@ class Connection(object):
 
         try:
             if verb == "POST":
-                data = urllib.urlencode(params).encode('ascii')
+                if mlvl:
+                    data = dicttoxml.dicttoxml(params)
+                else:
+                    data = urllib.urlencode(params).encode('ascii')
                 response = urllib2.urlopen(req, data).read()
             else:
                 response = urllib2.urlopen(req).read()
         except urllib2.HTTPError as err:
-            print(err.code)
+            print(err)
             return {"error": err.code}
 
         return response if self.result_type == "raw" else self._response_to_native(response)
@@ -183,21 +187,17 @@ class Connection(object):
     # Start New Booking
     def start_booking(self, booking_key, customers_no, components, customers, channel = 0):
         params = {
-            'booking': {
-                'total_customers': customers_no,
-                'booking_key': booking_key,
-                'components': components,
-                'customers': customers
-            }
+            'total_customers': customers_no,
+            'booking_key': booking_key,
+            'components': components,
+            'customers': customers
         }
-        return self._request("/c/booking/new/start.xml", channel, params, "POST")
+        return self._request("/c/booking/new/start.xml", channel, params, "POST", True)
 
 
     # Commit new booking
     def commit_booking(self, booking_id, channel = 0):
         params = {
-            'booking': {
-                'booking_id': booking_id
-            }
+            'booking_id': booking_id
         }
-        return self._request("/c/booking/new/commit.xml", channel, params, "POST")
+        return self._request("/c/booking/new/commit.xml", channel, params, "POST", True)

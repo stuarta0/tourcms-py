@@ -13,6 +13,9 @@ setup(name='tourcms',
       download_url='https://github.com/prio/tourcms',
       license=tourcms.__license__,
       platforms=['all'],
+      install_requires=[
+          'dicttoxml==1.7.4',
+      ],
       classifiers=[
           'Intended Audience :: Developers',
           'License :: OSI Approved :: BSD License',
