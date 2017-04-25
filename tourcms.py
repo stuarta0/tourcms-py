@@ -201,3 +201,15 @@ class Connection(object):
             'booking_id': booking_id
         }
         return self._request("/c/booking/new/commit.xml", channel, params, "POST", True)
+
+
+    # add Booking Note
+    def booking_note(self, booking_id, note, channel = 0, note_type = 'SERVICE')
+        params = {
+            'booking_id': booking_id,
+            'note': {
+                'type': note_type,
+                'text': note
+            }
+        }
+        return self._request("/c/booking/note/new.xml", channel, params, "POST", True)
