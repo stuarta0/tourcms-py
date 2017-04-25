@@ -1,11 +1,11 @@
 import hmac
 import hashlib
 import datetime as dt
-try: # Python 3
+try:  # Python 3
     import urllib.parse as urllib
 except ImportError:
     import urllib
-try: # Python 3
+try:  # Python 3
     import urllib.request as urllib2
 except ImportError:
     import urllib2
@@ -25,7 +25,7 @@ __license__ = 'BSD'
 
 
 class Connection(object):
-    def __init__(self, marketp_id, private_key, result_type = "raw", loglevel = logging.CRITICAL):
+    def __init__(self, marketp_id, private_key, result_type="raw", loglevel=logging.CRITICAL):
         try:
             int(marketp_id)
         except ValueError:
@@ -39,9 +39,11 @@ class Connection(object):
         self.logger.setLevel(loglevel)
 
     def _generate_signature(self, path, verb, channel, outbound_time):
-        string_to_sign = u"{0}/{1}/{2}/{3}{4}".format(channel, self.marketp_id, verb, outbound_time, path)
+        string_to_sign = u"{0}/{1}/{2}/{3}{4}".format(
+            channel, self.marketp_id, verb, outbound_time, path)
         self.logger.debug("string_to_sign is: {0}".format(string_to_sign))
-        dig = hmac.new(self.private_key.encode('utf8'), string_to_sign.encode('utf8'), hashlib.sha256)
+        dig = hmac.new(self.private_key.encode('utf8'),
+                       string_to_sign.encode('utf8'), hashlib.sha256)
         b64 = base64.b64encode(dig.digest())
         return urllib.quote_plus(b64)
 
@@ -51,10 +53,11 @@ class Connection(object):
         except KeyError:
             return xmltodict.parse(response)
         except NameError:
-            self.logger.error("XMLtodict not available, install it by running\n\t$ pip install xmltodict\n")
+            self.logger.error(
+                "XMLtodict not available, install it by running\n\t$ pip install xmltodict\n")
             return response
 
-    def _request(self, path, channel = 0, params = {}, verb = "GET", mlvl = False):
+    def _request(self, path, channel=0, params={}, verb="GET", mlvl=False):
         if params:
             query_string = "?" + urllib.urlencode(params)
         else:
@@ -82,7 +85,8 @@ class Connection(object):
             "Date": req_time.strftime("%a, %d %b %Y %H:%M:%S GMT"),
             "Authorization": "TourCMS {0}:{1}:{2}".format(channel, self.marketp_id, signature)
         }
-        self.logger.debug("Headers are: {0}".format(", ".join(["{0} => {1}".format(k,v) for k,v in headers.items()])))
+        self.logger.debug("Headers are: {0}".format(
+            ", ".join(["{0} => {1}".format(k, v) for k, v in headers.items()])))
 
         req = urllib2.Request(url)
         for key, value in headers.items():
@@ -104,7 +108,7 @@ class Connection(object):
         return response if self.result_type == "raw" else self._response_to_native(response)
 
     # API Rate Limit Status
-    def api_rate_limit_status(self, channel = 0):
+    def api_rate_limit_status(self, channel=0):
         return self._request("/api/rate_limit_status.xml", channel)
 
     # List Channels
@@ -116,29 +120,29 @@ class Connection(object):
         return self._request("/c/channel/show.xml", channel)
 
     # Search Tours
-    def search_tours(self, channel = 0, params = {}):
+    def search_tours(self, channel=0, params={}):
         return self._request("/c/tours/search.xml", channel, params)
 
     # Search Hotels by specific availability
-    def search_hotels_specific(self, tour = "", channel = 0, params = {}):
+    def search_hotels_specific(self, tour="", channel=0, params={}):
         params.update({"single_tour_id": tour})
         return self._request("/c/hotels/search-avail.xml", channel, params)
 
     # List Tours
-    def list_tours(self, channel = 0, params={}):
+    def list_tours(self, channel=0, params={}):
         return self._request("/c/tours/list.xml", channel, params)
 
     # List Tour Images
-    def list_tour_images(self, channel = 0, params={}):
+    def list_tour_images(self, channel=0, params={}):
         return self._request("/c/tours/images/list.xml", channel, params)
 
     # Show Tour
-    def show_tour(self, tour, channel, params = {}):
+    def show_tour(self, tour, channel, params={}):
         params.update({"id": tour})
         return self._request("/c/tour/show.xml", channel, params)
 
     # Show Tour Departures
-    def show_tour_departures(self, tour, channel, params = {}):
+    def show_tour_departures(self, tour, channel, params={}):
         params.update({"id": tour})
         return self._request("/c/tour/datesprices/dep/show.xml", channel, params)
 
@@ -151,24 +155,24 @@ class Connection(object):
         return self._request("/c/booking/new/get_redirect_url.xml", channel, {'url': {'response_url': url}}, "POST")
 
     # List Tour Locations
-    def list_tour_locations(self, channel = 0, params = {}):
+    def list_tour_locations(self, channel=0, params={}):
         return self._request("/p/tours/locations.xml", channel, params)
 
     # List Product Filters (only tour operator)
-    def list_product_filters(self, channel = 0):
+    def list_product_filters(self, channel=0):
         return self._request("/c/tours/filters.xml", channel)
 
     # Show Tour Dates & Deals
-    def show_tour_dates_deals(self, tour, channel = 0, params = {}):
+    def show_tour_dates_deals(self, tour, channel=0, params={}):
         params.update({"id": tour})
         return self._request("/c/tour/datesprices/datesndeals/search.xml", channel, params)
 
     # Create Customer/Enquiry
-    def create_enquiry(self, channel = 0, params = {}):
+    def create_enquiry(self, channel=0, params={}):
         return self._request("/c/enquiry/new.xml", channel, params, "POST")
 
     # Search Enquiries
-    def search_enquiries(self, channel = 0, params = {}):
+    def search_enquiries(self, channel=0, params={}):
         return self._request("/c/enquiries/search.xml", channel, params)
 
     # Show Enquiry
@@ -185,7 +189,7 @@ class Connection(object):
         return self._request("/c/tour/datesprices/checkavail.xml", channel, params)
 
     # Start New Booking
-    def start_booking(self, booking_key, customers_no, components, customers, channel = 0):
+    def start_booking(self, booking_key, customers_no, components, customers, channel=0):
         params = {
             'total_customers': customers_no,
             'booking_key': booking_key,
@@ -194,17 +198,15 @@ class Connection(object):
         }
         return self._request("/c/booking/new/start.xml", channel, params, "POST", True)
 
-
     # Commit new booking
-    def commit_booking(self, booking_id, channel = 0):
+    def commit_booking(self, booking_id, channel=0):
         params = {
             'booking_id': booking_id
         }
         return self._request("/c/booking/new/commit.xml", channel, params, "POST", True)
 
-
     # add Booking Note
-    def booking_note(self, booking_id, note, channel = 0, note_type = 'SERVICE')
+    def booking_note(self, booking_id, note, channel=0, note_type='SERVICE'):
         params = {
             'booking_id': booking_id,
             'note': {
