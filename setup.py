@@ -14,7 +14,7 @@ setup(name='tourcms',
       license=tourcms.__license__,
       platforms=['all'],
       install_requires=[
-          'dicttoxml==1.7.4',
+          'dicttoxml',
       ],
       classifiers=[
           'Intended Audience :: Developers',
