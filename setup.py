@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from setuptools import setup
-import tourcms
+from tourcms import __version__, __author__, __license__
 
 
 setup(name='tourcms',
@@ -14,7 +14,7 @@ setup(name='tourcms',
       license=tourcms.__license__,
       platforms=['all'],
       install_requires=[
-          'dicttoxml',
+          'dicttoxml==1.7.4',
       ],
       classifiers=[
           'Intended Audience :: Developers',
