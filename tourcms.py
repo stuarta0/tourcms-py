@@ -25,12 +25,18 @@ __license__ = 'BSD'
 
 
 class Connection(object):
-    def __init__(self, marketp_id, private_key, result_type="raw", loglevel=logging.CRITICAL):
+    def __init__(self, marketplace_id, private_key, result_type="raw", loglevel=logging.CRITICAL, channel_id=None):
         try:
-            int(marketp_id)
+            int(marketplace_id)
         except ValueError:
             raise TypeError("Marketplace ID must be an Integer")
-        self.marketp_id = int(marketp_id)
+        self.marketplace_id = int(marketplace_id)
+        if channel_id:
+            try:
+                int(channel_id)
+            except ValueError:
+                raise TypeError("Channel ID must be an Integer")
+        self.channel_id = int(channel_id) if channel_id else 0
         self.private_key = private_key
         self.result_type = result_type
         self.base_url = "https://api.tourcms.com"
@@ -40,7 +46,7 @@ class Connection(object):
 
     def _generate_signature(self, path, verb, channel, outbound_time):
         string_to_sign = u"{0}/{1}/{2}/{3}{4}".format(
-            channel, self.marketp_id, verb, outbound_time, path)
+            channel, self.marketplace_id, verb, outbound_time, path)
         self.logger.debug("string_to_sign is: {0}".format(string_to_sign))
         dig = hmac.new(self.private_key.encode('utf8'),
                        string_to_sign.encode('utf8'), hashlib.sha256)
@@ -57,7 +63,28 @@ class Connection(object):
                 "XMLtodict not available, install it by running\n\t$ pip install xmltodict\n")
             return response
 
-    def _request(self, path, channel=0, params={}, verb="GET", mlvl=False):
+    def _get_channel(self, channel):
+        '''
+        Parse the channel id if present or default to the channel id provided on initialisation.
+        :returns: The channel id or zero.
+        '''
+        try:
+            return int(channel)
+        except:
+            return self.channel_id  # defaults to 0
+
+    def _get_url(self, url, channel):
+        '''
+        Gets the correct /p/ or /c/ route depending on the presence of channel id.
+        :url: a url string with format "/{}/route.xml".
+        :channel: channel id or None to default to channel id provided on initialisation.
+        :returns: the formatted url with 'p' for marketplace agents (no channel), or 'c' for tour operators.
+        '''
+        channel = self._get_channel(channel)
+        return url.format('p' if channel == 0 else 'c')
+
+    def _request(self, path, channel=None, params={}, verb="GET", mlvl=False):
+        channel = self._get_channel(channel)
         if params:
             query_string = "?" + urllib.urlencode(params)
         else:
@@ -83,7 +110,7 @@ class Connection(object):
             "Content-type": "text/xml",
             "charset": "utf-8",
             "Date": req_time.strftime("%a, %d %b %Y %H:%M:%S GMT"),
-            "Authorization": "TourCMS {0}:{1}:{2}".format(channel, self.marketp_id, signature)
+            "Authorization": "TourCMS {0}:{1}:{2}".format(channel, self.marketplace_id, signature)
         }
         self.logger.debug("Headers are: {0}".format(
             ", ".join(["{0} => {1}".format(k, v) for k, v in headers.items()])))
@@ -108,7 +135,7 @@ class Connection(object):
         return response if self.result_type == "raw" else self._response_to_native(response)
 
     # API Rate Limit Status
-    def api_rate_limit_status(self, channel=0):
+    def api_rate_limit_status(self, channel=None):
         return self._request("/api/rate_limit_status.xml", channel)
 
     # List Channels
@@ -116,68 +143,97 @@ class Connection(object):
         return self._request("/p/channels/list.xml")
 
     # Show Channel
-    def show_channel(self, channel):
+    def show_channel(self, channel=None):
         return self._request("/c/channel/show.xml", channel)
 
     # Search Tours
-    def search_tours(self, channel=0, params={}):
-        return self._request("/c/tours/search.xml", channel, params)
+    def search_tours(self, channel=None, params={}):
+        return self._request(self._get_url("/{}/tours/search.xml", channel), channel, params)
 
     # Search Hotels by specific availability
-    def search_hotels_specific(self, tour="", channel=0, params={}):
+    def search_hotels_specific(self, tour="", channel=None, params={}):
         params.update({"single_tour_id": tour})
         return self._request("/c/hotels/search-avail.xml", channel, params)
 
     # List Tours
-    def list_tours(self, channel=0, params={}):
-        return self._request("/c/tours/list.xml", channel, params)
+    def list_tours(self, channel=None, params={}):
+        return self._request(self._get_url("/{}/tours/list.xml", channel), channel, params)
 
     # List Tour Images
-    def list_tour_images(self, channel=0, params={}):
-        return self._request("/c/tours/images/list.xml", channel, params)
+    def list_tour_images(self, channel=None, params={}):
+        return self._request(self._get_url("/c/tours/images/list.xml", channel), channel, params)
 
     # Show Tour
-    def show_tour(self, tour, channel, params={}):
+    def show_tour(self, tour, channel=None, params={}):
         params.update({"id": tour})
         return self._request("/c/tour/show.xml", channel, params)
 
     # Show Tour Departures
-    def show_tour_departures(self, tour, channel, params={}):
+    def show_tour_departures(self, tour, channel=None, params={}):
         params.update({"id": tour})
         return self._request("/c/tour/datesprices/dep/show.xml", channel, params)
 
-    # Show Supplier
-    def show_supplier(self, supplier_id, channel):
+    # Show Supplier (Tour Operator use only)
+    def show_supplier(self, supplier_id, channel=None):
         return self._request("/c/supplier/show.xml", channel, {"supplier_id": supplier_id})
 
     # booking creation > Getting a new booking key (only tour operator)
-    def get_booking_redirect_url(self, channel, url):
+    def get_booking_redirect_url(self, channel=None, url=''):
         return self._request("/c/booking/new/get_redirect_url.xml", channel, {'url': {'response_url': url}}, "POST")
 
     # List Tour Locations
-    def list_tour_locations(self, channel=0, params={}):
-        return self._request("/p/tours/locations.xml", channel, params)
+    def list_tour_locations(self, channel=None, params={}):
+        return self._request(self._get_url("/p/tours/locations.xml", channel), channel, params)
 
     # List Product Filters (only tour operator)
-    def list_product_filters(self, channel=0):
+    def list_product_filters(self, channel=None):
         return self._request("/c/tours/filters.xml", channel)
 
     # Show Tour Dates & Deals
-    def show_tour_dates_deals(self, tour, channel=0, params={}):
+    def show_tour_dates_deals(self, tour, channel=None, params={}):
         params.update({"id": tour})
         return self._request("/c/tour/datesprices/datesndeals/search.xml", channel, params)
 
     # Create Customer/Enquiry
-    def create_enquiry(self, channel=0, params={}):
+    def create_enquiry(self, channel=None, params={}):
         return self._request("/c/enquiry/new.xml", channel, params, "POST")
 
     # Search Enquiries
-    def search_enquiries(self, channel=0, params={}):
-        return self._request("/c/enquiries/search.xml", channel, params)
+    def search_enquiries(self, channel=None, params={}):
+        return self._request(self._get_url("/{}/enquiries/search.xml", channel), channel, params)
 
     # Show Enquiry
-    def show_enquiry(self, enquiry, channel):
+    def show_enquiry(self, enquiry, channel=None):
         return self._request("/c/enquiry/show.xml", channel, {'enquiry_id': enquiry})
+
+    def list_payments(self, channel=None):
+        return self._request("/c/booking/payment/list.xml", channel)
+
+    def show_booking(self, booking, channel=None):
+        response = self._request("/c/booking/show.xml", channel, {'booking_id': booking})
+        if type(response) is dict and response.get('error') == "OK" and response.get('booking'):
+            b = response['booking']
+            b.setdefault('customers', {}).update(customer=filter(None, [b['customers'].get('customer'),]))
+            b.setdefault('payments', {}).update(payment=filter(None, [b['payments'].get('payment'),]))
+            b.setdefault('custom_fields', {}).update(field=filter(None, [b['custom_fields'].get('field'),]))
+        return response
+
+    def show_customer(self, customer, channel=None):
+        response = self._request("/c/customer/show.xml", channel, {'customer_id': customer})
+        if type(response) is dict and response.get('error') == "OK":
+            response.setdefault('customer', {}).setdefault('custom_fields', {}).update(field=filter(None, [response['customer']['custom_fields'].get('field')]))
+        return response
+
+    def search_bookings(self, channel=None, params={}):
+        response = self._request(self._get_url("/{}/bookings/search.xml", channel), channel, params)
+        if type(response) is dict and response.get('error') == "OK":
+            response.setdefault('total_bookings_count', '0')
+            response.update(booking=filter(None, [response.get('booking'),]))
+        return response
+
+    # Agent Search (Tour Operator use only)
+    def search_agents(self, channel=None, params={}):
+        return self._request("/c/agents/search.xml", channel, params)
 
     # Check Tour Availability
     def tour_avail(self, tour_id, channel, date, rates):
@@ -189,7 +245,7 @@ class Connection(object):
         return self._request("/c/tour/datesprices/checkavail.xml", channel, params)
 
     # Start New Booking
-    def start_booking(self, booking_key, customers_no, components, customers, channel=0):
+    def start_booking(self, booking_key, customers_no, components, customers, channel=None):
         params = {
             'total_customers': customers_no,
             'booking_key': booking_key,
@@ -199,14 +255,14 @@ class Connection(object):
         return self._request("/c/booking/new/start.xml", channel, params, "POST", True)
 
     # Commit new booking
-    def commit_booking(self, booking_id, channel=0):
+    def commit_booking(self, booking_id, channel=None):
         params = {
             'booking_id': booking_id
         }
         return self._request("/c/booking/new/commit.xml", channel, params, "POST", True)
 
     # add Booking Note
-    def booking_note(self, booking_id, note, channel=0, note_type='SERVICE'):
+    def booking_note(self, booking_id, note, channel=None, note_type='SERVICE'):
         params = {
             'booking_id': booking_id,
             'note': {
