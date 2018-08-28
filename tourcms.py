@@ -54,11 +54,11 @@ class Connection(object):
         b64 = base64.b64encode(dig.digest())
         return urllib.quote_plus(b64)
 
-    def _response_to_native(self, response):
+    def _response_to_native(self, response, xmltodict_args={}):
         try:
-            return xmltodict.parse(response)['response']
+            return xmltodict.parse(response, **xmltodict_args)['response']
         except KeyError:
-            return xmltodict.parse(response)
+            return xmltodict.parse(response, **xmltodict_args)
         except NameError:
             self.logger.error(
                 "XMLtodict not available, install it by running\n\t$ pip install xmltodict\n")
@@ -94,6 +94,10 @@ class Connection(object):
         If one of the keys encountered is not a dictionary, it will promote that value to a list
         at the end of the chain of keys. e.g.
         _normalise_list({ 'a': 1 }, 'a', 'b') => { 'a': { 'b': [1] } }
+
+        Optionally use _request(..., xmltodict_args={ 'force_list': ('keyA', 'keyB', ) })
+        however this method will behave slightly differently to the node module as it won't
+        create the keys if not present.
         """
         for i, key in enumerate(keys):
             if i == len(keys) - 1:
@@ -112,7 +116,7 @@ class Connection(object):
     def _is_dict_response_ok(self, obj):
         return (type(obj) is dict or type(obj) is OrderedDict) and obj.get('error') == 'OK'
 
-    def _request(self, path, channel=None, params={}, verb="GET", mlvl=False):
+    def _request(self, path, channel=None, params={}, verb="GET", mlvl=False, xmltodict_args={}):
         channel = self._get_channel(channel)
         if params:
             query_string = "?" + urllib.urlencode(params)
@@ -161,7 +165,7 @@ class Connection(object):
             print(err)
             return {"error": err.code}
 
-        return response if self.result_type == "raw" else self._response_to_native(response)
+        return response if self.result_type == "raw" else self._response_to_native(response, xmltodict_args)
 
     # API Rate Limit Status
     def api_rate_limit_status(self, channel=None):
@@ -186,7 +190,10 @@ class Connection(object):
 
     # List Tours
     def list_tours(self, channel=None, params={}):
-        return self._request(self._get_url("/{}/tours/list.xml", channel), channel, params)
+        response = self._request(self._get_url("/{}/tours/list.xml", channel), channel, params)
+        if self._is_dict_response_ok(response):
+            self._normalise_list(response, 'tour')
+        return response
 
     # List Tour Images
     def list_tour_images(self, channel=None, params={}):
@@ -195,7 +202,20 @@ class Connection(object):
     # Show Tour
     def show_tour(self, tour, channel=None, params={}):
         params.update({"id": tour})
-        return self._request("/c/tour/show.xml", channel, params)
+        response = self._request("/c/tour/show.xml", channel, params)
+        if self._is_dict_response_ok(response):
+            tour = response['tour']
+            self._normalise_list(tour, 'geocode_midpoints', 'midpoint')
+            self._normalise_list(tour, 'pickup_points', 'pickup')
+            self._normalise_list(tour, 'documents', 'document')
+            self._normalise_list(tour, 'images', 'image')
+            self._normalise_list(tour, 'videos', 'video')
+            self._normalise_list(tour, 'new_booking', 'people_selection', 'rate')
+            self._normalise_list(tour, 'alternative_tours', 'tour')
+            self._normalise_list(tour, 'options', 'option')
+            self._normalise_list(tour, 'custom_fields', 'field')
+            self._normalise_list(tour, 'categories', 'group')
+        return response
 
     # Show Tour Departures
     def show_tour_departures(self, tour, channel=None, params={}):
