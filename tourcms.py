@@ -17,6 +17,7 @@ import dicttoxml
 import time
 import base64
 import logging
+from collections import OrderedDict
 
 
 __author__ = 'Jonathan Harrington'
@@ -64,24 +65,52 @@ class Connection(object):
             return response
 
     def _get_channel(self, channel):
-        '''
+        """
         Parse the channel id if present or default to the channel id provided on initialisation.
         :returns: The channel id or zero.
-        '''
+        """
         try:
             return int(channel)
         except:
             return self.channel_id  # defaults to 0
 
     def _get_url(self, url, channel):
-        '''
+        """
         Gets the correct /p/ or /c/ route depending on the presence of channel id.
         :url: a url string with format "/{}/route.xml".
         :channel: channel id or None to default to channel id provided on initialisation.
         :returns: the formatted url with 'p' for marketplace agents (no channel), or 'c' for tour operators.
-        '''
+        """
         channel = self._get_channel(channel)
         return url.format('p' if channel == 0 else 'c')
+
+    def _normalise_list(self, source, *keys):
+        """
+        Takes a dictionary with the structure { key0: { key1: x } } where any key
+        may not be present, and object x is either an object reference or a list of objects.
+
+        Normalises the source dictionary so all keys are present and x is converted to a list.
+        
+        If one of the keys encountered is not a dictionary, it will promote that value to a list
+        at the end of the chain of keys. e.g.
+        _normalise_list({ 'a': 1 }, 'a', 'b') => { 'a': { 'b': [1] } }
+        """
+        for i, key in enumerate(keys):
+            if i == len(keys) - 1:
+                items = source.setdefault(key, [])
+                source[key] = list(filter(None, items if type(items) is list else [items,]))
+            else:
+                next_obj = source.setdefault(key, {})
+                if type(next_obj) is dict or type(next_obj) is OrderedDict:
+                    source = next_obj
+                else:
+                    source.update({
+                        key: { keys[i + 1]: next_obj }
+                    })
+                    source = source[key]
+
+    def _is_dict_response_ok(self, obj):
+        return (type(obj) is dict or type(obj) is OrderedDict) and obj.get('error') == 'OK'
 
     def _request(self, path, channel=None, params={}, verb="GET", mlvl=False):
         channel = self._get_channel(channel)
@@ -161,7 +190,7 @@ class Connection(object):
 
     # List Tour Images
     def list_tour_images(self, channel=None, params={}):
-        return self._request(self._get_url("/c/tours/images/list.xml", channel), channel, params)
+        return self._request(self._get_url("/{}/tours/images/list.xml", channel), channel, params)
 
     # Show Tour
     def show_tour(self, tour, channel=None, params={}):
@@ -183,7 +212,7 @@ class Connection(object):
 
     # List Tour Locations
     def list_tour_locations(self, channel=None, params={}):
-        return self._request(self._get_url("/p/tours/locations.xml", channel), channel, params)
+        return self._request(self._get_url("/{}/tours/locations.xml", channel), channel, params)
 
     # List Product Filters (only tour operator)
     def list_product_filters(self, channel=None):
@@ -211,24 +240,25 @@ class Connection(object):
 
     def show_booking(self, booking, channel=None):
         response = self._request("/c/booking/show.xml", channel, {'booking_id': booking})
-        if type(response) is dict and response.get('error') == "OK" and response.get('booking'):
+        if self._is_dict_response_ok(response) and response.get('booking'):
             b = response['booking']
-            b.setdefault('customers', {}).update(customer=filter(None, [b['customers'].get('customer'),]))
-            b.setdefault('payments', {}).update(payment=filter(None, [b['payments'].get('payment'),]))
-            b.setdefault('custom_fields', {}).update(field=filter(None, [b['custom_fields'].get('field'),]))
+            self._normalise_list(b, 'customers', 'customer')
+            self._normalise_list(b, 'components', 'component')
+            self._normalise_list(b, 'payments', 'payment')
+            self._normalise_list(b, 'custom_fields', 'field')
         return response
 
     def show_customer(self, customer, channel=None):
         response = self._request("/c/customer/show.xml", channel, {'customer_id': customer})
-        if type(response) is dict and response.get('error') == "OK":
-            response.setdefault('customer', {}).setdefault('custom_fields', {}).update(field=filter(None, [response['customer']['custom_fields'].get('field')]))
+        if self._is_dict_response_ok(response):
+            self._normalise_list(response, 'customer', 'custom_fields', 'field')
         return response
 
     def search_bookings(self, channel=None, params={}):
         response = self._request(self._get_url("/{}/bookings/search.xml", channel), channel, params)
-        if type(response) is dict and response.get('error') == "OK":
+        if self._is_dict_response_ok(response):
             response.setdefault('total_bookings_count', '0')
-            response.update(booking=filter(None, [response.get('booking'),]))
+            self._normalise_list(response, 'booking')
         return response
 
     # Agent Search (Tour Operator use only)
